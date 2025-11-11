@@ -141,7 +141,33 @@ npm install && npm start
 - Update `REACT_APP_CONTRACT_NAME` with your deployed contract account
 - See [INSTALLATION.md](INSTALLATION.md) for detailed configuration options
 
+## Deployment
+
 For production deployment (including cPanel), see [INSTALLATION.md](INSTALLATION.md).
+
+### Automated Deployment Scripts
+
+This project includes automated deployment scripts for cPanel hosting:
+
+**Method 1: Build on Server**
+```bash
+# Upload project to /home/pawnline/proton-prediction-market/
+# Then run:
+./deploy-to-cpanel.sh
+```
+
+**Method 2: Build Locally**
+```bash
+# Build locally and create deployment package:
+./local-build.sh
+
+# Upload deploy-package/ contents to /home/pawnline/public_html/
+```
+
+📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for additional deployment automation details**, including:
+- Automated deployment script usage
+- .htaccess configuration for React Router
+- Deployment troubleshooting tips
 
 ## Usage Guide
 
