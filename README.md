@@ -162,6 +162,31 @@ The app will be available at `http://localhost:3000`.
 
 ## Deployment
 
+### Quick Start - cPanel Deployment
+
+This project includes automated deployment scripts for cPanel hosting:
+
+**Method 1: Build on Server**
+```bash
+# Upload project to /home/pawnline/proton-prediction-market/
+# Then run:
+./deploy-to-cpanel.sh
+```
+
+**Method 2: Build Locally**
+```bash
+# Build locally and create deployment package:
+./local-build.sh
+
+# Upload deploy-package/ contents to /home/pawnline/public_html/
+```
+
+📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment instructions**, including:
+- Environment configuration
+- cPanel setup guide
+- Troubleshooting tips
+- Security best practices
+
 ### Smart Contract Deployment
 
 1. Create a Proton testnet account at https://testnet.protonchain.com
@@ -173,7 +198,9 @@ proton contract deploy your-contract-account ./assembly/target/prediction.contra
 
 3. Set contract permissions to allow inline actions
 
-### Frontend Deployment
+### Other Hosting Providers
+
+For Vercel, Netlify, GitHub Pages, or other hosting:
 
 1. Build the production bundle:
 ```bash
@@ -181,7 +208,9 @@ cd frontend
 npm run build
 ```
 
-2. Deploy the `build/` directory to your hosting provider (Vercel, Netlify, GitHub Pages, etc.)
+2. Deploy the `build/` directory to your hosting provider
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
 ## Usage Guide
 
