@@ -233,14 +233,56 @@ npm run build
 
 ## Development Notes
 
-### Node.js Version
+### Node.js Version Compatibility
 
-The smart contract compilation requires Node.js v16.x due to proton-tsc dependencies. Use nvm to manage Node versions:
+**Node.js 22 Support (Recommended for Production)**
 
+This project now supports Node.js 22 for both smart contract compilation and frontend builds. Node.js 22 is recommended for production deployments, especially on AlmaLinux systems.
+
+**Smart Contract Build:**
+- Uses `proton-asc` compiler (proton-tsc CLI is not available in v0.3.58)
+- Builds successfully with Node.js 16, 18, 20, and 22
+- Minor deprecation warning from AssemblyScript on Node.js 22 (non-blocking)
+
+**Frontend Build:**
+- Requires patch-package to fix @proton/js ESM import compatibility
+- Patch automatically applied via postinstall script
+- Builds successfully with Node.js 22
+
+**Quick Start with Node.js 22:**
+```bash
+nvm install 22
+nvm use 22
+
+# Smart contract
+cd contracts && npm install && npm run build
+
+# Frontend
+cd ../frontend && npm install && npm run build
+```
+
+**Legacy Node.js 16 Support:**
+Node.js 16 is still supported but no longer required. Use nvm to manage Node versions:
 ```bash
 nvm install 16
 nvm use 16
 ```
+
+### AlmaLinux Deployment Requirements
+
+For deploying on AlmaLinux 8/9 with Node.js 22, ensure the following system packages are installed for native module compilation (particularly secp256k1):
+
+```bash
+# AlmaLinux 8/9
+sudo dnf install -y gcc-c++ make python3 openssl-devel
+
+# Verify installations
+gcc --version
+make --version
+python3 --version
+```
+
+These packages are required for building native dependencies during `npm install`.
 
 ### AssemblyScript Version
 
