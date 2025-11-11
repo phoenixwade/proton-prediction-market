@@ -111,77 +111,120 @@ proton-prediction-market/
 
 ### Prerequisites
 
-- Node.js v16.x (required for proton-tsc compatibility)
-- npm or yarn
-- Proton testnet account with XPR tokens
+- **Node.js v22.x** (recommended for production) or v16.x/v18.x/v20.x
+  - Use [nvm](https://github.com/nvm-sh/nvm) to manage Node.js versions
+  - For AlmaLinux/RHEL: `gcc-c++`, `make`, `python3`, `openssl-devel` (for native module compilation)
+- **npm** (comes with Node.js) or **yarn**
+- **Proton testnet account** with XPR tokens
+  - Create at https://testnet.protonchain.com
 
 ### Smart Contract Setup
 
-1. Navigate to the contracts directory:
+1. **Install Node.js 22** (recommended):
+```bash
+# Using nvm (Node Version Manager)
+nvm install 22
+nvm use 22
+```
+
+2. **Navigate to the contracts directory**:
 ```bash
 cd contracts
 ```
 
-2. Install dependencies:
+3. **Install dependencies**:
 ```bash
 npm install
 ```
+This will install `proton-asc` (AssemblyScript compiler), `proton-tsc` (SDK), and other dependencies.
 
-3. Compile the smart contract:
+4. **Compile the smart contract**:
 ```bash
 npm run build
 ```
+This runs `proton-asc assembly/prediction.contract.ts --target release` to compile the contract.
 
-The compiled WASM and ABI files will be in `assembly/target/`.
+5. **Verify the build**:
+The compiled WASM and ABI files will be in `assembly/target/`:
+- `prediction.contract.wasm` - Compiled WebAssembly binary
+- `prediction.contract.abi` - Contract ABI (Application Binary Interface)
 
 ### Frontend Setup
 
-1. Navigate to the frontend directory:
+1. **Ensure Node.js 22 is active**:
+```bash
+nvm use 22
+node --version  # Should show v22.x.x
+```
+
+2. **Navigate to the frontend directory**:
 ```bash
 cd frontend
 ```
 
-2. Install dependencies:
+3. **Install dependencies**:
 ```bash
 npm install
 ```
+This will install React, @proton/web-sdk, and other dependencies. The `postinstall` script will automatically apply patches via `patch-package` to fix Node.js 22 compatibility issues.
 
-3. Configure environment variables in `.env`:
-```
+4. **Configure environment variables**:
+Create a `.env` file in the `frontend/` directory with the following:
+```env
 REACT_APP_PROTON_ENDPOINT=https://testnet.protonchain.com
 REACT_APP_CONTRACT_NAME=your-contract-account
 REACT_APP_CHAIN_ID=71ee83bcf52142d61019d95f9cc5427ba6a0d7ff8accd9e2088ae2abeaf3d3dd
 ```
+Replace `your-contract-account` with your deployed contract account name.
 
-4. Start the development server:
+5. **Start the development server**:
 ```bash
 npm start
 ```
-
-The app will be available at `http://localhost:3000`.
+The app will be available at `http://localhost:3000` and will automatically reload when you make changes.
 
 ## Deployment
 
 ### Smart Contract Deployment
 
-1. Create a Proton testnet account at https://testnet.protonchain.com
+1. **Create a Proton testnet account**:
+   - Visit https://testnet.protonchain.com
+   - Create an account and fund it with testnet XPR tokens
 
-2. Deploy the contract using Proton CLI:
+2. **Install Proton CLI** (if not already installed):
 ```bash
-proton contract deploy your-contract-account ./assembly/target/prediction.contract.wasm ./assembly/target/prediction.contract.abi
+npm install -g @proton/cli
 ```
 
-3. Set contract permissions to allow inline actions
+3. **Deploy the contract**:
+```bash
+cd contracts
+proton contract deploy your-contract-account ./assembly/target/prediction.contract.wasm ./assembly/target/prediction.contract.abi
+```
+Replace `your-contract-account` with your Proton account name.
+
+4. **Set contract permissions**:
+Configure the contract to allow inline actions and set appropriate permissions for admin operations.
 
 ### Frontend Deployment
 
-1. Build the production bundle:
+1. **Build the production bundle**:
 ```bash
 cd frontend
 npm run build
 ```
+This creates an optimized production build in the `build/` directory.
 
-2. Deploy the `build/` directory to your hosting provider (Vercel, Netlify, GitHub Pages, etc.)
+2. **Deploy to hosting provider**:
+   - **Vercel**: `vercel deploy`
+   - **Netlify**: Drag and drop the `build/` folder or use Netlify CLI
+   - **GitHub Pages**: Push the `build/` folder to a `gh-pages` branch
+   - **Any static host**: Upload the contents of the `build/` directory
+
+3. **Configure environment variables** on your hosting provider:
+   - `REACT_APP_PROTON_ENDPOINT` - Your Proton RPC endpoint
+   - `REACT_APP_CONTRACT_NAME` - Your deployed contract account
+   - `REACT_APP_CHAIN_ID` - Proton chain ID
 
 ## Usage Guide
 
@@ -321,6 +364,3 @@ For issues, questions, or feature requests, please open an issue on GitHub.
 - Built on the Proton blockchain
 - Inspired by Polymarket, Kalshi, and PredictIt
 - Uses Proton WebAuth for seamless wallet integration
-
----
-*This is a verification change to test the PR workflow.*
