@@ -11,18 +11,51 @@ function App() {
   const [selectedMarket, setSelectedMarket] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'markets' | 'portfolio' | 'admin'>('markets');
 
+  useEffect(() => {
+    document.title = process.env.REACT_APP_NAME || 'Proton Prediction Market';
+  }, []);
+
+  useEffect(() => {
+    const attemptRestore = async () => {
+      try {
+        const { session: restoredSession } = await ConnectWallet({
+          linkOptions: {
+            endpoints: [process.env.REACT_APP_PROTON_ENDPOINT || 'https://testnet.protonchain.com'],
+            chainId: process.env.REACT_APP_CHAIN_ID || '71ee83bcf52142d61019d95f9cc5427ba6a0d7ff8accd9e2088ae2abeaf3d3dd',
+            restoreSession: true,
+            storagePrefix: process.env.REACT_APP_NAME || 'proton-prediction-market',
+          },
+          transportOptions: {
+            requestAccount: process.env.REACT_APP_CONTRACT_NAME || 'prediction',
+          },
+          selectorOptions: {
+            appName: process.env.REACT_APP_NAME || 'Proton Prediction Market',
+            appLogo: 'https://protonchain.com/logo.png',
+          },
+        });
+        if (restoredSession) {
+          setSession(restoredSession);
+        }
+      } catch (error) {
+        console.log('No session to restore');
+      }
+    };
+    attemptRestore();
+  }, []);
+
   const handleLogin = async () => {
     try {
       const { session } = await ConnectWallet({
         linkOptions: {
           endpoints: [process.env.REACT_APP_PROTON_ENDPOINT || 'https://testnet.protonchain.com'],
           chainId: process.env.REACT_APP_CHAIN_ID || '71ee83bcf52142d61019d95f9cc5427ba6a0d7ff8accd9e2088ae2abeaf3d3dd',
+          restoreSession: true,
         },
         transportOptions: {
           requestAccount: process.env.REACT_APP_CONTRACT_NAME || 'prediction',
         },
         selectorOptions: {
-          appName: 'Proton Prediction Market',
+          appName: process.env.REACT_APP_NAME || 'Proton Prediction Market',
           appLogo: 'https://protonchain.com/logo.png',
         },
       });
@@ -42,7 +75,7 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>Proton Prediction Market</h1>
+        <h1>{process.env.REACT_APP_NAME || 'Proton Prediction Market'}</h1>
         <div className="header-actions">
           {!session ? (
             <button onClick={handleLogin} className="connect-button">
