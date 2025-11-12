@@ -143,7 +143,11 @@ const Portfolio: React.FC<PortfolioProps> = ({ session }) => {
     if (!amount) return;
 
     try {
-      const withdrawAmount = parseFloat(amount) * 10000;
+      const withdrawAmount = parseFloat(amount);
+      if (withdrawAmount <= 0 || isNaN(withdrawAmount)) {
+        alert('Please enter a valid amount');
+        return;
+      }
 
       await session.transact({
         actions: [{
@@ -155,7 +159,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ session }) => {
           }],
           data: {
             to: session.auth.actor,
-            quantity: `${withdrawAmount.toFixed(0)} XPR`,
+            quantity: `${withdrawAmount.toFixed(4)} XPR`,
           },
         }],
       });
