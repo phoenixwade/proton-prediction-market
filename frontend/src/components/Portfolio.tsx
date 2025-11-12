@@ -98,6 +98,44 @@ const Portfolio: React.FC<PortfolioProps> = ({ session }) => {
     }
   };
 
+  const handleDeposit = async () => {
+    if (!session) return;
+
+    const amount = prompt('Enter amount to deposit (XPR):');
+    if (!amount) return;
+
+    try {
+      const depositAmount = parseFloat(amount);
+      if (depositAmount <= 0 || isNaN(depositAmount)) {
+        alert('Please enter a valid amount');
+        return;
+      }
+
+      await session.transact({
+        actions: [{
+          account: 'eosio.token',
+          name: 'transfer',
+          authorization: [{
+            actor: session.auth.actor,
+            permission: session.auth.permission,
+          }],
+          data: {
+            from: session.auth.actor,
+            to: process.env.REACT_APP_CONTRACT_NAME || 'prediction',
+            quantity: `${depositAmount.toFixed(4)} XPR`,
+            memo: 'Deposit to prediction market',
+          },
+        }],
+      });
+
+      alert('Deposit successful!');
+      fetchPortfolio();
+    } catch (error) {
+      console.error('Error depositing:', error);
+      alert('Failed to deposit: ' + error);
+    }
+  };
+
   const handleWithdraw = async () => {
     if (!session || !balance) return;
 
@@ -147,9 +185,14 @@ const Portfolio: React.FC<PortfolioProps> = ({ session }) => {
         <div className="balance-amount">
           {balance ? balance.funds : '0.0000 XPR'}
         </div>
-        <button onClick={handleWithdraw} className="withdraw-button">
-          Withdraw
-        </button>
+        <div className="balance-actions">
+          <button onClick={handleDeposit} className="deposit-button">
+            Deposit
+          </button>
+          <button onClick={handleWithdraw} className="withdraw-button">
+            Withdraw
+          </button>
+        </div>
       </div>
 
       <div className="positions-section">
