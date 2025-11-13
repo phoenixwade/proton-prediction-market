@@ -1,4 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { JsonRpc } from '@proton/js';
+
+interface Market {
+  id: number;
+  admin: string;
+  question: string;
+  category: string;
+  resolved: boolean;
+  expireTime: number;
+}
 
 interface AdminPanelProps {
   session: any;
@@ -12,6 +22,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ session }) => {
   const [expireDate, setExpireDate] = useState('');
   const [createLoading, setCreateLoading] = useState(false);
 
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [loadingMarkets, setLoadingMarkets] = useState(false);
   const [resolveMarketId, setResolveMarketId] = useState('');
   const [resolveOutcome, setResolveOutcome] = useState<'yes' | 'no'>('yes');
   const [resolveLoading, setResolveLoading] = useState(false);
@@ -56,10 +68,53 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ session }) => {
     }
   };
 
+  useEffect(() => {
+    if (session && activeTab === 'resolve') {
+      fetchMarkets();
+    }
+  }, [session, activeTab]);
+
+  const fetchMarkets = async () => {
+    if (!session) return;
+    
+    setLoadingMarkets(true);
+    try {
+      const rpc = new JsonRpc(process.env.REACT_APP_RPC_ENDPOINT || 'https://proton.greymass.com');
+      const contractName = process.env.REACT_APP_CONTRACT_NAME || 'prediction';
+      
+      const result = await rpc.get_table_rows({
+        json: true,
+        code: contractName,
+        scope: contractName,
+        table: 'markets',
+        limit: 1000,
+      });
+
+      const allMarkets: Market[] = result.rows.map((row: any) => ({
+        id: row.id,
+        admin: row.admin,
+        question: row.question,
+        category: row.category,
+        resolved: row.resolved,
+        expireTime: row.expireTime,
+      }));
+
+      const eligibleMarkets = allMarkets.filter(
+        market => !market.resolved && market.admin === session.auth.actor
+      );
+
+      setMarkets(eligibleMarkets);
+    } catch (error) {
+      console.error('Error fetching markets:', error);
+    } finally {
+      setLoadingMarkets(false);
+    }
+  };
+
   const handleResolveMarket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session || !resolveMarketId) {
-      alert('Please enter a market ID');
+      alert('Please select a market');
       return;
     }
 
@@ -83,6 +138,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ session }) => {
 
       alert('Market resolved successfully!');
       setResolveMarketId('');
+      fetchMarkets();
     } catch (error) {
       console.error('Error resolving market:', error);
       alert('Failed to resolve market: ' + error);
@@ -166,46 +222,57 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ session }) => {
       {activeTab === 'resolve' && (
         <div className="admin-section">
           <h3>Resolve Market</h3>
-          <form onSubmit={handleResolveMarket} className="admin-form">
-            <div className="form-group">
-              <label>Market ID</label>
-              <input
-                type="number"
-                value={resolveMarketId}
-                onChange={(e) => setResolveMarketId(e.target.value)}
-                placeholder="1"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Outcome</label>
-              <div className="button-group">
-                <button
-                  type="button"
-                  className={resolveOutcome === 'yes' ? 'active' : ''}
-                  onClick={() => setResolveOutcome('yes')}
+          {loadingMarkets ? (
+            <p>Loading your markets...</p>
+          ) : markets.length === 0 ? (
+            <p>No unresolved markets found where you are the admin.</p>
+          ) : (
+            <form onSubmit={handleResolveMarket} className="admin-form">
+              <div className="form-group">
+                <label>Select Market</label>
+                <select
+                  value={resolveMarketId}
+                  onChange={(e) => setResolveMarketId(e.target.value)}
+                  required
                 >
-                  Yes
-                </button>
-                <button
-                  type="button"
-                  className={resolveOutcome === 'no' ? 'active' : ''}
-                  onClick={() => setResolveOutcome('no')}
-                >
-                  No
-                </button>
+                  <option value="">Choose a market to resolve</option>
+                  {markets.map((market) => (
+                    <option key={market.id} value={market.id}>
+                      #{market.id} - {market.question} ({market.category})
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={resolveLoading}
-              className="submit-button"
-            >
-              {resolveLoading ? 'Resolving...' : 'Resolve Market'}
-            </button>
-          </form>
+              <div className="form-group">
+                <label>Outcome</label>
+                <div className="button-group">
+                  <button
+                    type="button"
+                    className={resolveOutcome === 'yes' ? 'active' : ''}
+                    onClick={() => setResolveOutcome('yes')}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    className={resolveOutcome === 'no' ? 'active' : ''}
+                    onClick={() => setResolveOutcome('no')}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={resolveLoading}
+                className="submit-button"
+              >
+                {resolveLoading ? 'Resolving...' : 'Resolve Market'}
+              </button>
+            </form>
+          )}
         </div>
       )}
     </div>
