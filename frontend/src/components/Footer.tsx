@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
               rel="noopener noreferrer"
               className="xpr-link"
             >
-              Powered by XPR Network
+              <img src="/xpr_logo.png" alt="XPR Network" className="xpr-logo" />
             </a>
           </div>
           <p className="footer-copyright">

@@ -56,7 +56,7 @@ export class PredictionMarketContract extends Contract {
     } else {
       bal.funds = new Asset(bal.funds.amount + quantity.amount, quantity.symbol);
     }
-    this.balancesTable.set(bal, from);
+    this.balancesTable.set(bal, this.receiver);
     
     print(`Deposited ${quantity.toString()} for ${from.toString()}`);
   }
@@ -205,10 +205,10 @@ export class PredictionMarketContract extends Contract {
       let bal = this.balancesTable.get(account.N);
       if (bal == null) {
         bal = new BalanceTable(account, new Asset(refundAmount, XPR_SYMBOL));
-        this.balancesTable.set(bal, account);
+        this.balancesTable.set(bal, this.receiver);
       } else {
         bal.funds = new Asset(bal.funds.amount + refundAmount, bal.funds.symbol);
-        this.balancesTable.update(bal, account);
+        this.balancesTable.update(bal, this.receiver);
       }
     } else {
       const positionsTable = new TableStore<PositionTable>(this.receiver, account);
@@ -221,10 +221,10 @@ export class PredictionMarketContract extends Contract {
           let bal = this.balancesTable.get(account.N);
           if (bal == null) {
             bal = new BalanceTable(account, new Asset(refund, XPR_SYMBOL));
-            this.balancesTable.set(bal, account);
+            this.balancesTable.set(bal, this.receiver);
           } else {
             bal.funds = new Asset(bal.funds.amount + refund, bal.funds.symbol);
-            this.balancesTable.update(bal, account);
+            this.balancesTable.update(bal, this.receiver);
           }
         } else {
           pos.yes_shares += order!.quantity;
@@ -283,10 +283,10 @@ export class PredictionMarketContract extends Contract {
       let bal = this.balancesTable.get(user.N);
       if (bal == null) {
         bal = new BalanceTable(user, new Asset(payout, XPR_SYMBOL));
-        this.balancesTable.set(bal, user);
+        this.balancesTable.set(bal, this.receiver);
       } else {
         bal.funds = new Asset(bal.funds.amount + payout, bal.funds.symbol);
-        this.balancesTable.update(bal, user);
+        this.balancesTable.update(bal, this.receiver);
       }
     }
     
@@ -393,10 +393,10 @@ export class PredictionMarketContract extends Contract {
     let sellerBal = this.balancesTable.get(seller.N);
     if (sellerBal == null) {
       sellerBal = new BalanceTable(seller, new Asset(payout, XPR_SYMBOL));
-      this.balancesTable.set(sellerBal, seller);
+      this.balancesTable.set(sellerBal, this.receiver);
     } else {
       sellerBal.funds = new Asset(sellerBal.funds.amount + payout, sellerBal.funds.symbol);
-      this.balancesTable.update(sellerBal, seller);
+      this.balancesTable.update(sellerBal, this.receiver);
     }
 
     let feeBal = this.balancesTable.get(this.receiver.N);
